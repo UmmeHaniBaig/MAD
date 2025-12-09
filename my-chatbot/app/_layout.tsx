@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Modal,
@@ -68,13 +69,18 @@ export default function App() {
 
   // Send message
   const handleSend = async () => {
+    if (!currentSession) {
+      Alert.alert("Create chat first", "Please create a new one.");
+      return;
+    }
+
     const text = input.trim();
-    if (!text || !currentSession) return;
+    if (!text) return;
 
     setInput("");
     setIsTyping(true);
 
-    // 1️⃣ Add user message immediately
+    // Add user message
     const userMsg: Message = { id: Date.now().toString(), from: "user", text, time: now(), status: "sent" };
     const updatedSession: ChatSession = { ...currentSession, messages: [...currentSession.messages, userMsg] };
     const updatedSessions = sessions.map((s) =>
@@ -86,10 +92,7 @@ export default function App() {
     AsyncStorage.setItem(CHAT_SESSIONS_KEY, JSON.stringify(updatedSessions));
 
     try {
-      // 2️⃣ Fetch bot reply
       const reply = await getBotReply(text);
-
-      // Add bot message immediately
       const botMsg: Message = { id: Date.now().toString(), from: "bot", text: reply, time: now(), status: "sent" };
       const newSession: ChatSession = { ...updatedSession, messages: [...updatedSession.messages, botMsg] };
       const newSessions = updatedSessions.map((s) =>
@@ -119,7 +122,7 @@ export default function App() {
 
   const getBotReply = async (userText: string) => {
     try {
-      const res = await fetch("http://192.168.100.44:3000/chat", {
+      const res = await fetch("https://ruttish-inviolately-giada.ngrok-free.dev/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userText }),
@@ -145,7 +148,8 @@ export default function App() {
       <View style={[styles.msgRow, isUser ? styles.msgRowRight : styles.msgRowLeft]}>
         <View style={[styles.msgBubble, isUser ? styles.userBubble : styles.botBubble]}>
           <Text style={[styles.msgText, isUser && { color: "#fff" }]}>{item.text}</Text>
-          <Text style={styles.msgTime}>{item.time}</Text>
+          {/* Updated timestamp color for user messages */}
+          <Text style={[styles.msgTime, isUser && { color: "#f0f0f0" }]}>{item.time}</Text>
         </View>
       </View>
     );
@@ -182,7 +186,7 @@ export default function App() {
     <View style={styles.container}>
       {/* Left panel */}
       <View style={styles.leftPanel}>
-        <Text style={styles.panelTitle}>Chats</Text>
+        <Text style={styles.panelTitle}>Your chats</Text>
         <FlatList
           data={sessions}
           keyExtractor={(item) => item.sessionId}
@@ -229,12 +233,14 @@ export default function App() {
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={80}>
           <View style={styles.inputRow}>
             <TextInput
-              style={styles.input}
-              placeholder="Type a message..."
-              value={input}
-              onChangeText={setInput}
-              onSubmitEditing={handleSend}
-            />
+  style={[styles.input, { backgroundColor: "#ffffff", borderWidth: 0 }]}
+  placeholder="Type a message..."
+  placeholderTextColor="#999" // light grey placeholder
+  value={input}
+  onChangeText={setInput}
+  onSubmitEditing={handleSend}
+  underlineColorAndroid="transparent" // remove Android underline
+/>
             <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
               <Text style={styles.sendText}>Send</Text>
             </TouchableOpacity>
@@ -275,14 +281,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, flexDirection: "row", backgroundColor: "#f7f7fb" },
   leftPanel: { width: 140, backgroundColor: "#eee", padding: 10 },
   rightPanel: { flex: 1, backgroundColor: "#f7f7fb" },
-  panelTitle: { fontWeight: "bold", fontSize: 16, marginBottom: 10 },
+  panelTitle: { fontWeight: "bold", fontSize: 18, marginBottom: 10, marginTop: 25 },
   sessionItem: { padding: 10, borderRadius: 6, backgroundColor: "#ddd" },
   sessionActive: { backgroundColor: "#ac2e34" },
   sessionTitle: { color: "#000" },
-  newSessionBtn: { padding: 10, backgroundColor: "#ac2e34", borderRadius: 6, marginTop: 10, alignItems: "center" },
+  newSessionBtn: { padding: 10, backgroundColor: "#ac2e34", borderRadius: 6, marginTop: 10, alignItems: "center", marginBottom: 27 },
   deleteBtn: { backgroundColor: "#ac2e34", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginLeft: 5, justifyContent: "center", alignItems: "center" },
 
-  chatHeader: { fontSize: 29, fontWeight: "bold", color: "#050505ff", padding: 12, borderBottomWidth: 1, borderColor: "#eee", textAlign: "center", },
+  chatHeader: { fontSize: 25, fontWeight: "bold", color: "#050505ff", padding: 12, borderBottomWidth: 1, borderColor: "#fdfdfdff", textAlign: "center", marginTop: 20 },
   chatArea: { paddingHorizontal: 12, paddingBottom: 8 },
   msgRow: { marginVertical: 6, flexDirection: "row" },
   msgRowLeft: { justifyContent: "flex-start" },
@@ -290,17 +296,17 @@ const styles = StyleSheet.create({
   msgBubble: { maxWidth: "80%", padding: 10, borderRadius: 12 },
   userBubble: { backgroundColor: "#ac2e34", borderTopRightRadius: 4 },
   botBubble: { backgroundColor: "#e6e6ea", borderTopLeftRadius: 4 },
-  msgText: { color: "#333", fontSize: 15 },
+  msgText: { color: "#484848ff", fontSize: 15 },
   msgTime: { fontSize: 10, color: "#060404ff", marginTop: 6, textAlign: "right" },
-  inputRow: { flexDirection: "row", padding: 10, borderTopWidth: 1, borderColor: "#eee", backgroundColor: "#fff" },
-  input: { flex: 1, height: 44, borderWidth: 1, borderColor: "#ddd", borderRadius: 8, paddingHorizontal: 10, backgroundColor: "#fff" },
+  inputRow: { flexDirection: "row", padding: 10, borderTopWidth: 1, borderColor: "#f8f7f7ff",  marginBottom: 25 },
+  input: { flex: 1, height: 44, borderWidth: 0, borderRadius: 8, paddingHorizontal: 10, backgroundColor: "#e6e6ea" }, 
   sendBtn: { marginLeft: 8, justifyContent: "center", paddingHorizontal: 14, backgroundColor: "#ac2e34", borderRadius: 8 },
   sendText: { color: "#fff", fontWeight: "600" },
   typingRow: { paddingVertical: 6, paddingHorizontal: 12 },
-  typingText: { color: "#666", fontStyle: "italic" },
+  typingText: { color: "#1c1a1aff", fontStyle: "italic" },
 
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center" },
-  modalContainer: { width: "80%", backgroundColor: "#fff", padding: 20, borderRadius: 10 },
+  modalContainer: { width: "50%", backgroundColor: "#fff", padding: 20, borderRadius: 10 },
   modalInput: { borderWidth: 1, borderColor: "#ddd", borderRadius: 8, padding: 10, marginBottom: 10 },
   modalBtn: { flex: 1, backgroundColor: "#ac2e34", padding: 10, borderRadius: 6, alignItems: "center" },
 });
