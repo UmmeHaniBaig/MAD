@@ -1,3 +1,4 @@
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -326,7 +327,7 @@ export default function App() {
                   { transform: [{ rotateY: frontInterpolate }] }
                 ]}
               >
-                <Text style={styles.frontText}>👆 Tap to Reveal</Text>
+                <Text style={styles.frontText}>Tap to Reveal</Text>
               </Animated.View>
 
               {/* Back side */}
@@ -415,11 +416,12 @@ const styles = StyleSheet.create({
 
   /* HEADER */
   header: {
-    height: 50,
+    height: 63,
     backgroundColor: "#a52a2a",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
+    paddingTop: Platform.OS === "ios" ? 30 : 15,
     elevation: 5,
   },
   menuBtn: {
@@ -440,9 +442,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     width:
       SCREEN_WIDTH < 400
-        ? SCREEN_WIDTH * 0.25 // was 0.35
+        ? SCREEN_WIDTH * 0.50 // was 0.35
         : SCREEN_WIDTH < 600
-        ? SCREEN_WIDTH * 0.20 // was 0.30
+        ? SCREEN_WIDTH * 0.25 // was 0.30
         : SCREEN_WIDTH * 0.18,
     backgroundColor: "#fff",
     padding: 15,
@@ -494,6 +496,7 @@ sessionRow: {
 
   /* Flip Card (Poetry) styles */
   cardContainer: {
+    
     alignItems: "center",
     justifyContent: "center",
     height: 120,
@@ -539,7 +542,7 @@ sessionRow: {
   msgRowRight: { justifyContent: "flex-end" },
 
   msgBubble: {
-    maxWidth: "80%",
+    maxWidth: "75%",
     padding: 12,
     borderRadius: 14,
     shadowColor: "#000",
@@ -553,28 +556,35 @@ sessionRow: {
   msgTime: { fontSize: 10, marginTop: 4, textAlign: "right" },
 
   typingRow: { paddingVertical: 6, paddingHorizontal: 12 },
-  typingText: { color: "#333", fontStyle: "italic" },
+  typingText: { color: "#1a1a1aff", fontStyle: "italic" },
 
-  inputRow: {
-    flexDirection: "row",
-    padding: 10,
-    borderTopWidth: 1,
-    borderColor: "#e5e5e5",
-    backgroundColor: "#fff",
-  },
-  input: {
-    flex: 1,
-    height: 44,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    backgroundColor: "#f0f0f0",
-  },
+ inputRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 10,
+  paddingVertical: 10,
+  borderWidth: 2,
+  borderColor: "#ddd",
+  borderRadius: 12,        // make the row rounded
+  backgroundColor: "#fff", // optional: row background
+  marginBottom: 10,
+},
+
+input: {
+  flex: 1,                  // takes remaining space
+  height: 44,
+  borderRadius: 8,
+  paddingHorizontal: 10,
+  backgroundColor: "#f0f0f0",
+},
   sendBtn: {
     marginLeft: 8,
     backgroundColor: "#a52a2a",
     borderRadius: 8,
     paddingHorizontal: 16,
     justifyContent: "center",
+    alignItems: "center",      // centers the text vertically
+    height: 44,        
   },
   sendText: { color: "#fff", fontWeight: "bold" },
 
